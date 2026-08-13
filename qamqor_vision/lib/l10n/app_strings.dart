@@ -1,3 +1,5 @@
+import '../services/speech_rate.dart';
+
 /// Поддерживаемые языки интерфейса и голосового движка.
 enum AppLanguage {
   kazakh('kk-KZ', 'Қазақша'),
@@ -27,8 +29,15 @@ class AppStrings {
     _Key.ocrNotReady: 'Мәтінді оқу әлі іске қосылған жоқ',
     _Key.describeButton: 'Айналаны сипаттау',
     _Key.readTextButton: 'Мәтінді оқу',
+    _Key.repeatButton: 'Қайталау',
     _Key.stopButton: 'Тоқтату',
     _Key.languageButton: 'Тілді ауыстыру',
+    _Key.speedButton: 'Сөйлеу жылдамдығы',
+    _Key.speedSlow: 'баяу',
+    _Key.speedNormal: 'қалыпты',
+    _Key.speedFast: 'жылдам',
+    _Key.nothingToRepeat: 'Әзірге қайталайтын ештеңе жоқ.',
+    _Key.doubleTapHint: 'Айналаны сипаттау үшін экранды екі рет түртіңіз.',
     _Key.greeting: 'Сәлеметсіз бе. Qamqor Vision қосылды.',
     _Key.analyzing: 'Қарап тұрмын',
     _Key.seeIntro: 'Көріп тұрмын:',
@@ -54,8 +63,15 @@ class AppStrings {
     _Key.ocrNotReady: 'Чтение текста пока не реализовано',
     _Key.describeButton: 'Описать обстановку',
     _Key.readTextButton: 'Прочитать текст',
+    _Key.repeatButton: 'Повторить',
     _Key.stopButton: 'Остановить',
     _Key.languageButton: 'Сменить язык',
+    _Key.speedButton: 'Скорость речи',
+    _Key.speedSlow: 'медленная',
+    _Key.speedNormal: 'обычная',
+    _Key.speedFast: 'быстрая',
+    _Key.nothingToRepeat: 'Пока нечего повторять.',
+    _Key.doubleTapHint: 'Дважды коснитесь экрана, чтобы описать обстановку.',
     _Key.greeting: 'Здравствуйте. Qamqor Vision запущен.',
     _Key.analyzing: 'Смотрю',
     _Key.seeIntro: 'Вижу:',
@@ -83,8 +99,19 @@ class AppStrings {
   String get ocrNotReady => _values[_Key.ocrNotReady]!;
   String get describeButton => _values[_Key.describeButton]!;
   String get readTextButton => _values[_Key.readTextButton]!;
+  String get repeatButton => _values[_Key.repeatButton]!;
   String get stopButton => _values[_Key.stopButton]!;
   String get languageButton => _values[_Key.languageButton]!;
+  String get speedButton => _values[_Key.speedButton]!;
+  String get nothingToRepeat => _values[_Key.nothingToRepeat]!;
+  String get doubleTapHint => _values[_Key.doubleTapHint]!;
+
+  /// Название скорости речи — для подписи кнопки и озвучки после переключения.
+  String speedName(SpeechRate rate) => switch (rate) {
+    SpeechRate.slow => _values[_Key.speedSlow]!,
+    SpeechRate.normal => _values[_Key.speedNormal]!,
+    SpeechRate.fast => _values[_Key.speedFast]!,
+  };
   String get greeting => _values[_Key.greeting]!;
   String get analyzing => _values[_Key.analyzing]!;
   String get seeIntro => _values[_Key.seeIntro]!;
@@ -104,8 +131,15 @@ enum _Key {
   ocrNotReady,
   describeButton,
   readTextButton,
+  repeatButton,
   stopButton,
   languageButton,
+  speedButton,
+  speedSlow,
+  speedNormal,
+  speedFast,
+  nothingToRepeat,
+  doubleTapHint,
   greeting,
   analyzing,
   seeIntro,

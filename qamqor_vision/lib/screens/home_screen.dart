@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_strings.dart';
 import '../services/scene_narrator.dart';
+import '../services/settings_service.dart';
 import '../services/speech_service.dart';
 import '../services/vision_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/big_action_button.dart';
 
-/// Главный экран: описание обстановки, чтение текста, остановка речи
-/// и переключение языка.
+/// Главный экран: описание обстановки, чтение текста, повтор, остановка речи,
+/// скорость речи и переключение языка.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, this.recognizer});
+  const HomeScreen({super.key, this.recognizer, this.settingsStore});
 
-  /// Подменяется в тестах, чтобы обойтись без камеры.
+  /// Подменяются в тестах, чтобы обойтись без камеры и без диска.
   final SceneRecognizer? recognizer;
+  final SettingsStore? settingsStore;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -21,6 +23,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final SpeechService _speech = SpeechService();
+  late final SettingsStore _settingsStore =
+      widget.settingsStore ?? PrefsSettingsStore();
 
   // Камера открывается лениво: держать её включённой, пока пользователь
   // ничего не снимает, значит зря сажать батарею.
@@ -28,10 +32,11 @@ class _HomeScreenState extends State<HomeScreen> {
   SceneRecognizer get _recognizer =>
       _recognizerInstance ??= widget.recognizer ?? CameraSceneRecognizer();
 
-  AppLanguage _language = AppLanguage.russian;
+  AppSettings _settings = const AppSettings();
   String _lastSpoken = '';
   bool _isRecognizing = false;
 
+  AppLanguage get _language => _settings.language;
   AppStrings get _strings => AppStrings.of(_language);
 
   @override
@@ -42,9 +47,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _startUp() async {
-    await _speech.init();
+    final saved = await _settingsStore.load();
     if (!mounted) return;
-    await _say(_strings.greeting);
+    setState(() => _settings = saved);
+
+    await _speech.init(language: saved.language, rate: saved.rate);
+    if (!mounted) return;
+
+    // Подсказку про двойной тап проговариваем при запуске: обнаружить жест
+    // самостоятельно, не видя экрана, невозможно.
+    await _say('${_strings.greeting} ${_strings.doubleTapHint}');
   }
 
   void _onSpeechChanged() {
@@ -77,6 +89,16 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /// Повтор последней фразы: речь легко пропустить мимо ушей, а снимать
+  /// кадр заново ради этого незачем.
+  Future<void> _repeat() async {
+    if (_lastSpoken.isEmpty) {
+      await _say(_strings.nothingToRepeat);
+      return;
+    }
+    await _speech.speak(_lastSpoken);
+  }
+
   Future<void> _stop() async {
     await _speech.stop();
     if (mounted) setState(() => _lastSpoken = _strings.stopped);
@@ -84,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _switchLanguage() async {
     final next = _language.toggled;
-    setState(() => _language = next);
+    await _updateSettings(_settings.copyWith(language: next));
     await _speech.setLanguage(next);
     if (!mounted) return;
 
@@ -94,6 +116,22 @@ class _HomeScreenState extends State<HomeScreen> {
           ? '${strings.languageSwitched} ${strings.voiceUnavailable}'
           : strings.languageSwitched,
     );
+  }
+
+  Future<void> _cycleSpeed() async {
+    final next = _settings.rate.next;
+    await _updateSettings(_settings.copyWith(rate: next));
+    await _speech.setRate(next);
+    if (!mounted) return;
+
+    // Новую скорость произносим уже на ней самой — так пользователь
+    // сразу слышит результат, а не только название.
+    await _say('${_strings.speedButton}: ${_strings.speedName(next)}');
+  }
+
+  Future<void> _updateSettings(AppSettings next) async {
+    setState(() => _settings = next);
+    await _settingsStore.save(next);
   }
 
   @override
@@ -112,6 +150,18 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(strings.appTitle),
         actions: [
+          Semantics(
+            button: true,
+            label:
+                '${strings.speedButton}: ${strings.speedName(_settings.rate)}',
+            excludeSemantics: true,
+            child: IconButton(
+              onPressed: _cycleSpeed,
+              iconSize: 30,
+              color: AppTheme.accent,
+              icon: const Icon(Icons.speed),
+            ),
+          ),
           // Подпись языком, на который переключаемся, а не текущим:
           // кнопка отвечает на вопрос «что будет, если нажать».
           Semantics(
@@ -139,9 +189,14 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(
-                child: _SpokenTextPanel(
-                  label: strings.lastSpokenLabel,
-                  text: _lastSpoken,
+                child: _DescribeTapArea(
+                  hint: strings.doubleTapHint,
+                  semanticLabel: '${strings.lastSpokenLabel} $_lastSpoken',
+                  onDescribe: _describeScene,
+                  child: _SpokenTextPanel(
+                    label: strings.lastSpokenLabel,
+                    text: _lastSpoken,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -150,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.visibility,
                 onPressed: _describeScene,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               BigActionButton(
                 label: strings.readTextButton,
                 icon: Icons.text_fields,
@@ -158,18 +213,73 @@ class _HomeScreenState extends State<HomeScreen> {
                 semanticHint: strings.ocrNotReady,
                 onPressed: () => _say(strings.readTextStub),
               ),
-              const SizedBox(height: 16),
-              // Кнопка остановки нужна всегда: если её прятать во время
-              // молчания, пользователь не найдёт её на ощупь по памяти.
-              BigActionButton(
-                label: strings.stopButton,
-                icon: Icons.stop_circle,
-                filled: false,
-                onPressed: _speech.isSpeaking ? _stop : () {},
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: BigActionButton(
+                      label: strings.repeatButton,
+                      icon: Icons.replay,
+                      filled: false,
+                      onPressed: _repeat,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Кнопка остановки нужна всегда: если её прятать во
+                  // время молчания, пользователь не найдёт её на ощупь
+                  // по памяти.
+                  Expanded(
+                    child: BigActionButton(
+                      label: strings.stopButton,
+                      icon: Icons.stop_circle,
+                      filled: false,
+                      onPressed: _speech.isSpeaking ? _stop : () {},
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Панель занимает бо́льшую часть экрана и сама работает кнопкой:
+/// не видя экрана, попасть пальцем в кнопку внизу трудно, а промахнуться
+/// мимо половины экрана почти невозможно.
+///
+/// Двойной тап, а не одиночный: одиночным пользователь просто нащупывает
+/// интерфейс. Для скринридеров рядом объявлено семантическое действие —
+/// TalkBack и VoiceOver перехватывают жесты и до `GestureDetector`
+/// их не доносят, поэтому одного жеста мало.
+class _DescribeTapArea extends StatelessWidget {
+  const _DescribeTapArea({
+    required this.hint,
+    required this.semanticLabel,
+    required this.onDescribe,
+    required this.child,
+  });
+
+  final String hint;
+  final String semanticLabel;
+  final VoidCallback onDescribe;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      hint: hint,
+      onTap: onDescribe,
+      excludeSemantics: true,
+      child: GestureDetector(
+        key: const ValueKey('describe-tap-area'),
+        onDoubleTap: onDescribe,
+        behavior: HitTestBehavior.opaque,
+        child: child,
       ),
     );
   }
