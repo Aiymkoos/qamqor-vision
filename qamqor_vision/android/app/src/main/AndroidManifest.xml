@@ -1,4 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Камера нужна для распознавания обстановки. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Приложение работает и без камеры (озвучка, чтение экрана), поэтому
+         камера не объявлена обязательной: иначе Google Play скрыл бы
+         приложение от устройств без неё. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+
     <application
         android:label="qamqor_vision"
         android:name="${applicationName}"

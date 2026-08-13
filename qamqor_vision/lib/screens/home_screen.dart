@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_strings.dart';
+import '../services/scene_narrator.dart';
 import '../services/speech_service.dart';
+import '../services/vision_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/big_action_button.dart';
 
-/// Главный экран: два действия, остановка речи и переключение языка.
-///
-/// Распознавание пока не подключено — кнопки озвучивают демонстрационный
-/// текст, который прямо говорит об этом. Показывать выдуманный результат
-/// распознавания нельзя: пользователь не может проверить его глазами.
+/// Главный экран: описание обстановки, чтение текста, остановка речи
+/// и переключение языка.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.recognizer});
+
+  /// Подменяется в тестах, чтобы обойтись без камеры.
+  final SceneRecognizer? recognizer;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -20,8 +22,15 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final SpeechService _speech = SpeechService();
 
+  // Камера открывается лениво: держать её включённой, пока пользователь
+  // ничего не снимает, значит зря сажать батарею.
+  SceneRecognizer? _recognizerInstance;
+  SceneRecognizer get _recognizer =>
+      _recognizerInstance ??= widget.recognizer ?? CameraSceneRecognizer();
+
   AppLanguage _language = AppLanguage.russian;
   String _lastSpoken = '';
+  bool _isRecognizing = false;
 
   AppStrings get _strings => AppStrings.of(_language);
 
@@ -47,6 +56,27 @@ class _HomeScreenState extends State<HomeScreen> {
     await _speech.speak(text);
   }
 
+  Future<void> _describeScene() async {
+    // Повторное нажатие во время съёмки сбросило бы кадр на полпути.
+    if (_isRecognizing) return;
+    setState(() => _isRecognizing = true);
+
+    // Пользователь не видит индикатор загрузки, поэтому о начале работы
+    // сообщаем голосом.
+    await _say(_strings.analyzing);
+
+    try {
+      final labels = await _recognizer.describeScene();
+      if (!mounted) return;
+      await _say(SceneNarrator.describe(labels, _language));
+    } on SceneRecognitionException catch (e) {
+      if (!mounted) return;
+      await _say(SceneNarrator.errorFor(e.kind, _language));
+    } finally {
+      if (mounted) setState(() => _isRecognizing = false);
+    }
+  }
+
   Future<void> _stop() async {
     await _speech.stop();
     if (mounted) setState(() => _lastSpoken = _strings.stopped);
@@ -70,6 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _speech.removeListener(_onSpeechChanged);
     _speech.dispose();
+    _recognizerInstance?.dispose();
     super.dispose();
   }
 
@@ -107,25 +138,24 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _DemoBanner(text: strings.demoBanner),
-              const SizedBox(height: 20),
-              Expanded(child: _SpokenTextPanel(
-                label: strings.lastSpokenLabel,
-                text: _lastSpoken,
-              )),
+              Expanded(
+                child: _SpokenTextPanel(
+                  label: strings.lastSpokenLabel,
+                  text: _lastSpoken,
+                ),
+              ),
               const SizedBox(height: 20),
               BigActionButton(
                 label: strings.describeButton,
                 icon: Icons.visibility,
-                semanticHint: strings.demoBanner,
-                onPressed: () => _say(strings.describeStub),
+                onPressed: _describeScene,
               ),
               const SizedBox(height: 16),
               BigActionButton(
                 label: strings.readTextButton,
                 icon: Icons.text_fields,
                 filled: false,
-                semanticHint: strings.demoBanner,
+                semanticHint: strings.ocrNotReady,
                 onPressed: () => _say(strings.readTextStub),
               ),
               const SizedBox(height: 16),
@@ -140,32 +170,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _DemoBanner extends StatelessWidget {
-  const _DemoBanner({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppTheme.accent, width: 2),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.info_outline, color: AppTheme.accent, size: 28),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
-          ),
-        ],
       ),
     );
   }

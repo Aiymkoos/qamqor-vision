@@ -24,18 +24,24 @@ class AppStrings {
 
   static const AppStrings _kazakh = AppStrings._({
     _Key.appTitle: 'Qamqor Vision',
-    _Key.demoBanner: 'Демо-режим: тану әлі іске қосылған жоқ',
+    _Key.ocrNotReady: 'Мәтінді оқу әлі іске қосылған жоқ',
     _Key.describeButton: 'Айналаны сипаттау',
     _Key.readTextButton: 'Мәтінді оқу',
     _Key.stopButton: 'Тоқтату',
     _Key.languageButton: 'Тілді ауыстыру',
     _Key.greeting: 'Сәлеметсіз бе. Qamqor Vision қосылды.',
-    _Key.describeStub:
-        'Бұл — дыбыстық шығудың демонстрациясы. Нақты нұсқада мұнда '
-        'камера көрген заттардың сипаттамасы айтылады.',
+    _Key.analyzing: 'Қарап тұрмын',
+    _Key.seeIntro: 'Көріп тұрмын:',
+    _Key.nothingRecognized:
+        'Не бар екенін ажырата алмадым. Жақынырақ келіңіз немесе '
+        'жарықты қосыңыз.',
+    _Key.cameraDenied:
+        'Камераға рұқсат жоқ. Қолданба параметрлерінен рұқсат беріңіз.',
+    _Key.cameraMissing: 'Құрылғыда камера табылмады.',
+    _Key.recognitionFailed: 'Тану сәтсіз аяқталды. Қайталап көріңіз.',
     _Key.readTextStub:
-        'Бұл — дыбыстық шығудың демонстрациясы. Нақты нұсқада мұнда '
-        'камераға түскен мәтін оқылады.',
+        'Мәтінді оқу әлі іске қосылған жоқ. Бұл — дыбыстық шығудың '
+        'демонстрациясы.',
     _Key.stopped: 'Тоқтатылды.',
     _Key.languageSwitched: 'Тіл қазақ тіліне ауыстырылды.',
     _Key.voiceUnavailable:
@@ -45,18 +51,24 @@ class AppStrings {
 
   static const AppStrings _russian = AppStrings._({
     _Key.appTitle: 'Qamqor Vision',
-    _Key.demoBanner: 'Демо-режим: распознавание пока не реализовано',
+    _Key.ocrNotReady: 'Чтение текста пока не реализовано',
     _Key.describeButton: 'Описать обстановку',
     _Key.readTextButton: 'Прочитать текст',
     _Key.stopButton: 'Остановить',
     _Key.languageButton: 'Сменить язык',
     _Key.greeting: 'Здравствуйте. Qamqor Vision запущен.',
-    _Key.describeStub:
-        'Это демонстрация голосового вывода. В рабочей версии здесь будет '
-        'описание предметов, которые видит камера.',
+    _Key.analyzing: 'Смотрю',
+    _Key.seeIntro: 'Вижу:',
+    _Key.nothingRecognized:
+        'Не могу разобрать, что передо мной. Подойдите ближе или '
+        'включите свет.',
+    _Key.cameraDenied:
+        'Нет доступа к камере. Разрешите его в настройках приложения.',
+    _Key.cameraMissing: 'Камера на устройстве не найдена.',
+    _Key.recognitionFailed: 'Не удалось распознать. Попробуйте ещё раз.',
     _Key.readTextStub:
-        'Это демонстрация голосового вывода. В рабочей версии здесь будет '
-        'прочитан текст, попавший в кадр.',
+        'Чтение текста пока не реализовано. Это демонстрация голосового '
+        'вывода.',
     _Key.stopped: 'Остановлено.',
     _Key.languageSwitched: 'Язык переключён на русский.',
     _Key.voiceUnavailable:
@@ -68,13 +80,18 @@ class AppStrings {
       language == AppLanguage.kazakh ? _kazakh : _russian;
 
   String get appTitle => _values[_Key.appTitle]!;
-  String get demoBanner => _values[_Key.demoBanner]!;
+  String get ocrNotReady => _values[_Key.ocrNotReady]!;
   String get describeButton => _values[_Key.describeButton]!;
   String get readTextButton => _values[_Key.readTextButton]!;
   String get stopButton => _values[_Key.stopButton]!;
   String get languageButton => _values[_Key.languageButton]!;
   String get greeting => _values[_Key.greeting]!;
-  String get describeStub => _values[_Key.describeStub]!;
+  String get analyzing => _values[_Key.analyzing]!;
+  String get seeIntro => _values[_Key.seeIntro]!;
+  String get nothingRecognized => _values[_Key.nothingRecognized]!;
+  String get cameraDenied => _values[_Key.cameraDenied]!;
+  String get cameraMissing => _values[_Key.cameraMissing]!;
+  String get recognitionFailed => _values[_Key.recognitionFailed]!;
   String get readTextStub => _values[_Key.readTextStub]!;
   String get stopped => _values[_Key.stopped]!;
   String get languageSwitched => _values[_Key.languageSwitched]!;
@@ -84,13 +101,18 @@ class AppStrings {
 
 enum _Key {
   appTitle,
-  demoBanner,
+  ocrNotReady,
   describeButton,
   readTextButton,
   stopButton,
   languageButton,
   greeting,
-  describeStub,
+  analyzing,
+  seeIntro,
+  nothingRecognized,
+  cameraDenied,
+  cameraMissing,
+  recognitionFailed,
   readTextStub,
   stopped,
   languageSwitched,
