@@ -78,9 +78,9 @@ class _HomeScreenState extends State<HomeScreen> {
     await _say(_strings.analyzing);
 
     try {
-      final labels = await _recognizer.describeScene();
+      final observation = await _recognizer.describeScene();
       if (!mounted) return;
-      await _say(SceneNarrator.describe(labels, _language));
+      await _say(SceneNarrator.describe(observation, _language));
     } on SceneRecognitionException catch (e) {
       if (!mounted) return;
       await _say(SceneNarrator.errorFor(e.kind, _language));

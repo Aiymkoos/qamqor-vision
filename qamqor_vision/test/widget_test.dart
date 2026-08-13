@@ -15,16 +15,19 @@ import 'package:qamqor_vision/services/speech_rate.dart';
 import 'package:qamqor_vision/services/vision_service.dart';
 
 class FakeSceneRecognizer implements SceneRecognizer {
-  FakeSceneRecognizer({this.labels = const [], this.error});
+  FakeSceneRecognizer({
+    this.observation = const SceneObservation(),
+    this.error,
+  });
 
-  final List<RecognizedLabel> labels;
+  final SceneObservation observation;
   final SceneError? error;
 
   @override
-  Future<List<RecognizedLabel>> describeScene() async {
+  Future<SceneObservation> describeScene() async {
     final failure = error;
     if (failure != null) throw SceneRecognitionException(failure);
-    return labels;
+    return observation;
   }
 
   @override
@@ -106,10 +109,12 @@ void main() {
     await pumpApp(
       tester,
       recognizer: FakeSceneRecognizer(
-        labels: const [
-          RecognizedLabel('Table', 0.9),
-          RecognizedLabel('Chair', 0.8),
-        ],
+        observation: const SceneObservation(
+          labels: [
+            RecognizedLabel('Table', 0.9),
+            RecognizedLabel('Chair', 0.8),
+          ],
+        ),
       ),
     );
 
@@ -120,13 +125,34 @@ void main() {
     expect(spoken.last, 'Вижу: стол, стул.');
   });
 
+  testWidgets('препятствие называется раньше предметов', (tester) async {
+    await pumpApp(
+      tester,
+      recognizer: FakeSceneRecognizer(
+        observation: const SceneObservation(
+          labels: [RecognizedLabel('Table', 0.9)],
+          obstacles: [
+            DetectedObstacle(ObstacleZone.center, ObstacleProximity.near, 0.4),
+          ],
+        ),
+      ),
+    );
+
+    await tester.tap(find.text(russian.describeButton));
+    await tester.pumpAndSettle();
+
+    expect(spoken.last, 'Препятствие по центру, близко. Вижу: стол.');
+  });
+
   testWidgets('двойной тап по экрану заменяет попадание в кнопку', (
     tester,
   ) async {
     await pumpApp(
       tester,
       recognizer: FakeSceneRecognizer(
-        labels: const [RecognizedLabel('Door', 0.9)],
+        observation: const SceneObservation(
+          labels: [RecognizedLabel('Door', 0.9)],
+        ),
       ),
     );
 

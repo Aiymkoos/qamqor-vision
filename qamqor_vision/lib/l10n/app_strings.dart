@@ -1,4 +1,5 @@
 import '../services/speech_rate.dart';
+import '../services/vision_service.dart';
 
 /// Поддерживаемые языки интерфейса и голосового движка.
 enum AppLanguage {
@@ -41,6 +42,12 @@ class AppStrings {
     _Key.greeting: 'Сәлеметсіз бе. Qamqor Vision қосылды.',
     _Key.analyzing: 'Қарап тұрмын',
     _Key.seeIntro: 'Көріп тұрмын:',
+    _Key.obstacle: 'Кедергі',
+    _Key.zoneLeft: 'сол жақта',
+    _Key.zoneCenter: 'ортада',
+    _Key.zoneRight: 'оң жақта',
+    _Key.proximityNear: 'жақын',
+    _Key.proximityFar: 'алыс',
     _Key.nothingRecognized:
         'Не бар екенін ажырата алмадым. Жақынырақ келіңіз немесе '
         'жарықты қосыңыз.',
@@ -75,6 +82,12 @@ class AppStrings {
     _Key.greeting: 'Здравствуйте. Qamqor Vision запущен.',
     _Key.analyzing: 'Смотрю',
     _Key.seeIntro: 'Вижу:',
+    _Key.obstacle: 'Препятствие',
+    _Key.zoneLeft: 'слева',
+    _Key.zoneCenter: 'по центру',
+    _Key.zoneRight: 'справа',
+    _Key.proximityNear: 'близко',
+    _Key.proximityFar: 'далеко',
     _Key.nothingRecognized:
         'Не могу разобрать, что передо мной. Подойдите ближе или '
         'включите свет.',
@@ -115,6 +128,18 @@ class AppStrings {
   String get greeting => _values[_Key.greeting]!;
   String get analyzing => _values[_Key.analyzing]!;
   String get seeIntro => _values[_Key.seeIntro]!;
+  String get obstacle => _values[_Key.obstacle]!;
+
+  String zoneName(ObstacleZone zone) => switch (zone) {
+    ObstacleZone.left => _values[_Key.zoneLeft]!,
+    ObstacleZone.center => _values[_Key.zoneCenter]!,
+    ObstacleZone.right => _values[_Key.zoneRight]!,
+  };
+
+  String proximityName(ObstacleProximity proximity) => switch (proximity) {
+    ObstacleProximity.near => _values[_Key.proximityNear]!,
+    ObstacleProximity.far => _values[_Key.proximityFar]!,
+  };
   String get nothingRecognized => _values[_Key.nothingRecognized]!;
   String get cameraDenied => _values[_Key.cameraDenied]!;
   String get cameraMissing => _values[_Key.cameraMissing]!;
@@ -143,6 +168,12 @@ enum _Key {
   greeting,
   analyzing,
   seeIntro,
+  obstacle,
+  zoneLeft,
+  zoneCenter,
+  zoneRight,
+  proximityNear,
+  proximityFar,
   nothingRecognized,
   cameraDenied,
   cameraMissing,
