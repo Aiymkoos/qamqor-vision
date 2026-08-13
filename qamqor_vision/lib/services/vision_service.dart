@@ -39,11 +39,9 @@ abstract class SceneRecognizer {
 /// Работает офлайн: ни снимок, ни результат никуда не отправляются.
 class CameraSceneRecognizer implements SceneRecognizer {
   CameraSceneRecognizer({double confidenceThreshold = 0.65})
-      : _labeler = ImageLabeler(
-          options: ImageLabelerOptions(
-            confidenceThreshold: confidenceThreshold,
-          ),
-        );
+    : _labeler = ImageLabeler(
+        options: ImageLabelerOptions(confidenceThreshold: confidenceThreshold),
+      );
 
   final ImageLabeler _labeler;
   CameraController? _controller;

@@ -9,10 +9,7 @@ import 'vision_service.dart';
 class SceneNarrator {
   SceneNarrator._();
 
-  static String describe(
-    List<RecognizedLabel> labels,
-    AppLanguage language,
-  ) {
+  static String describe(List<RecognizedLabel> labels, AppLanguage language) {
     final strings = AppStrings.of(language);
 
     // Множество убирает повторы: разные метки модели переводятся одним

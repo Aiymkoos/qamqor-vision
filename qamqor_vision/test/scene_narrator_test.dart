@@ -10,46 +10,36 @@ void main() {
 
   group('SceneNarrator', () {
     test('перечисляет распознанные предметы', () {
-      final phrase = SceneNarrator.describe(
-        const [
-          RecognizedLabel('Table', 0.92),
-          RecognizedLabel('Chair', 0.81),
-        ],
-        russian,
-      );
+      final phrase = SceneNarrator.describe(const [
+        RecognizedLabel('Table', 0.92),
+        RecognizedLabel('Chair', 0.81),
+      ], russian);
 
       expect(phrase, 'Вижу: стол, стул.');
     });
 
     test('озвучивает на казахском', () {
-      final phrase = SceneNarrator.describe(
-        const [RecognizedLabel('Door', 0.9)],
-        kazakh,
-      );
+      final phrase = SceneNarrator.describe(const [
+        RecognizedLabel('Door', 0.9),
+      ], kazakh);
 
       expect(phrase, 'Көріп тұрмын: есік.');
     });
 
     test('не повторяет слово, если две метки переводятся одинаково', () {
-      final phrase = SceneNarrator.describe(
-        const [
-          RecognizedLabel('Tree', 0.9),
-          RecognizedLabel('Wood', 0.7),
-        ],
-        russian,
-      );
+      final phrase = SceneNarrator.describe(const [
+        RecognizedLabel('Tree', 0.9),
+        RecognizedLabel('Wood', 0.7),
+      ], russian);
 
       expect(phrase, 'Вижу: дерево.');
     });
 
     test('пропускает метки, которых нет в словаре', () {
-      final phrase = SceneNarrator.describe(
-        const [
-          RecognizedLabel('Table', 0.9),
-          RecognizedLabel('Rugby', 0.8),
-        ],
-        russian,
-      );
+      final phrase = SceneNarrator.describe(const [
+        RecognizedLabel('Table', 0.9),
+        RecognizedLabel('Rugby', 0.8),
+      ], russian);
 
       expect(phrase, 'Вижу: стол.');
     });
@@ -57,10 +47,9 @@ void main() {
     test('честно сообщает, когда сказать нечего', () {
       // Модель что-то нашла, но ни одну метку мы не умеем перевести.
       // Выдумывать предметы в такой ситуации нельзя.
-      final phrase = SceneNarrator.describe(
-        const [RecognizedLabel('Rugby', 0.9)],
-        russian,
-      );
+      final phrase = SceneNarrator.describe(const [
+        RecognizedLabel('Rugby', 0.9),
+      ], russian);
 
       expect(phrase, AppStrings.of(russian).nothingRecognized);
     });

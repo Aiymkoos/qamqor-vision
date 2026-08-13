@@ -44,9 +44,7 @@ class BigActionButton extends StatelessWidget {
       children: [
         Icon(icon, size: 36),
         const SizedBox(width: 16),
-        Flexible(
-          child: Text(label, textAlign: TextAlign.center),
-        ),
+        Flexible(child: Text(label, textAlign: TextAlign.center)),
       ],
     );
 
@@ -64,19 +62,14 @@ class BigActionButton extends StatelessWidget {
       // подпись дважды.
       excludeSemantics: true,
       child: filled
-          ? FilledButton(
-              onPressed: handlePress,
-              style: style,
-              child: child,
-            )
+          ? FilledButton(onPressed: handlePress, style: style, child: child)
           : OutlinedButton(
               onPressed: handlePress,
               style: style.copyWith(
                 side: const WidgetStatePropertyAll(
                   BorderSide(color: AppTheme.accent, width: 3),
                 ),
-                foregroundColor:
-                    const WidgetStatePropertyAll(AppTheme.accent),
+                foregroundColor: const WidgetStatePropertyAll(AppTheme.accent),
               ),
               child: child,
             ),

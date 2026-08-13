@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  analyze-and-test:
+    name: Анализ и тесты
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        # Проект Flutter лежит в подпапке, а не в корне репозитория.
+        working-directory: qamqor_vision
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Установить зависимости
+        run: flutter pub get
+
+      - name: Проверить форматирование
+        # Только исходники: сгенерированный код плагинов форматтеру не подчиняется.
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Статический анализ
+        run: flutter analyze
+
+      - name: Тесты
+        run: flutter test

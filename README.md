@@ -1,5 +1,7 @@
 # Qamqor Vision
 
+[![CI](https://github.com/Aiymkoos/qamqor-vision/actions/workflows/ci.yml/badge.svg)](https://github.com/Aiymkoos/qamqor-vision/actions/workflows/ci.yml)
+
 ### Концепт интеллектуального ассистента для незрячих и слабовидящих людей
 
 > «Ты не один — мы рядом с каждым шагом»

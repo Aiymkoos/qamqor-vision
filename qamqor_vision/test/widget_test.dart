@@ -37,9 +37,9 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall call) async {
-      if (call.method == 'isLanguageAvailable') return true;
-      return 1;
-    });
+          if (call.method == 'isLanguageAvailable') return true;
+          return 1;
+        });
   });
 
   tearDown(() {
@@ -47,7 +47,10 @@ void main() {
         .setMockMethodCallHandler(channel, null);
   });
 
-  Future<void> pumpApp(WidgetTester tester, {SceneRecognizer? recognizer}) async {
+  Future<void> pumpApp(
+    WidgetTester tester, {
+    SceneRecognizer? recognizer,
+  }) async {
     await tester.pumpWidget(
       QamqorVisionApp(recognizer: recognizer ?? FakeSceneRecognizer()),
     );
@@ -91,8 +94,9 @@ void main() {
     expect(find.text(russian.cameraDenied), findsOneWidget);
   });
 
-  testWidgets('модель ничего не узнала — приложение это признаёт',
-      (tester) async {
+  testWidgets('модель ничего не узнала — приложение это признаёт', (
+    tester,
+  ) async {
     await pumpApp(tester, recognizer: FakeSceneRecognizer());
 
     await tester.tap(find.text(russian.describeButton));
@@ -101,8 +105,9 @@ void main() {
     expect(find.text(russian.nothingRecognized), findsOneWidget);
   });
 
-  testWidgets('чтение текста честно сообщает, что не реализовано',
-      (tester) async {
+  testWidgets('чтение текста честно сообщает, что не реализовано', (
+    tester,
+  ) async {
     await pumpApp(tester);
 
     await tester.tap(find.text(russian.readTextButton));
@@ -129,8 +134,7 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('переключение языка меняет подписи на казахские',
-      (tester) async {
+  testWidgets('переключение языка меняет подписи на казахские', (tester) async {
     await pumpApp(tester);
 
     // Кнопка подписана языком, на который переключаемся.
